@@ -16,7 +16,7 @@ Tiempo
 - Peor caso: O(n^2)
 
 Espacio
-- O(n Log(n))
+- O(Log(n))
 
 ### ItemQueue
 Tiempo mejor caso
@@ -33,7 +33,22 @@ Espacio
 - O(n)
 
 ### Proyecto completo
+Tiempo mejor y peor caso
+- T(n) = O(n) + O(n)t1 + (O(n)(t2 + t3 + t4 + t5) + O(n Log(n))t6 + t7O(1) + O(n)t8 = O(n Log(n))/O(n^2)
+O(n): Carga de archivo.
+t1: Mostrar items en vector.
+t2, t3, t4, t5: Quicksort aplicado de distintas formas.
+t6: Queue de objetos lanzables.
+t7: Objetos lanzados.
+t8: Veces que se guardaron los items en .csv con nuevo orden.
+
+Espacio
+- S(n) = O(n) + O(Log(n)) + O(1) = O(n)
 
 ## Consideraciones (casos que pueden romper el proyecto)
+El código despliega un menú donde ver el inventario, acomodarlo de distintas formas, agregar objetos lanzables a la fila de objetos lanzables, lanzar un objeto en la fila y guardar los cambios hechos al orden del inventario en el .csv.
+El programa corre tanto en la consola como en visual studio code(con las extensiones necesarias instaladas y MinGW) y está hecho con c++ standard por lo que corre en todos los sistemas operativos.
+Se debe tener en una misma carpeta el main y los dos archivos.h, misntras que el .csv debe estar en la carpeta de output de la carpeta donde esten los otros archivos.
 
 ### Correcciones
+- Se agrego funcion de actualizacion de datos en el .csv
