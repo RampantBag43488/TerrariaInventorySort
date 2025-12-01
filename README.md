@@ -51,6 +51,8 @@ t8: Veces que se guardaron los items en .csv con nuevo orden.
 Espacio
 - S(n) = O(n) + O(Log(n)) + O(1) = O(n)
 
+vector, quicksort y queue/sistema/variables.
+
 ## Consideraciones (casos que pueden romper el proyecto)
 El código despliega un menú donde ver el inventario, acomodarlo de distintas formas, agregar objetos lanzables a la fila de objetos lanzables, lanzar un objeto en la fila y guardar los cambios hechos al orden del inventario en el .csv.
 El programa corre tanto en la consola como en visual studio code(con las extensiones necesarias instaladas y MinGW) y está hecho con c++ standard por lo que corre en todos los sistemas operativos.
