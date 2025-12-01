@@ -57,7 +57,9 @@ vector, quicksort y queue/sistema/variables.
 ## Consideraciones (casos que pueden romper el proyecto)
 El código despliega un menú donde ver el inventario, acomodarlo de distintas formas, agregar objetos lanzables a la fila de objetos lanzables, lanzar un objeto en la fila y guardar los cambios hechos al orden del inventario en el .csv.
 El programa corre tanto en la consola como en visual studio code(con las extensiones necesarias instaladas y MinGW) y está hecho con c++ standard por lo que corre en todos los sistemas operativos.
-Se debe tener en una misma carpeta el main y los dos archivos.h, misntras que el .csv debe estar en la carpeta de output de la carpeta donde esten los otros archivos.
+Se debe tener en una misma carpeta el main, los dos archivos.h y el .csv (si es el vs code el .csv debe estar en la carpeta de output).
+
+compilar en consola con: "g++ TerrariaMain.cpp" (esto teniendo todos los archivos como se especifico y habriendo desde alli la consola).
 
 ### Correcciones
 - Se agrego funcion de actualizacion de datos en el .csv
