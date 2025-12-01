@@ -35,7 +35,9 @@ Espacio
 ### Proyecto completo
 Tiempo mejor y peor caso
 - T(n) = O(n) + O(n)t1 + (O(n)(t2 + t3 + t4 + t5) + O(n Log(n))t6 + t7O(1) + O(n)t8 = O(n Log(n))/O(n^2)
+
 O(n): Carga de archivo.
+
 t1: Mostrar items en vector.
 
 t2, t3, t4, t5: Quicksort aplicado de distintas formas.
