@@ -1,4 +1,4 @@
-# Proyecto POO (inventario)
+# Proyecto sort de inventario (Terraria)
 ### Iñaki Mancera Llano
 
 ## Descripcion
