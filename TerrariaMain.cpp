@@ -27,11 +27,12 @@ void menu() {
     cout << "5. Ordenar por tipo (mayor a menor)\n";
     cout << "6. Agregar objeto lanzable para uso\n";
     cout << "7. Disparar!!!!\n";
-    cout << "8. Salir\n";
+    cout << "8. Guardar items en el .csv\n";
+    cout << "9. Salir\n";
     cout << "Elige una opcion: ";
 }
 
-bool cargarCSV(const string &DocumentName, vector<Item> &items) {
+bool cargarCSV(string DocumentName, vector<Item> &items) {
     ifstream file(DocumentName);
 
     if (!file.is_open()) {
@@ -62,6 +63,24 @@ bool cargarCSV(const string &DocumentName, vector<Item> &items) {
         
 
         items.emplace_back(name, amount, type, throwable);
+    }
+
+    file.close();
+    return true;
+}
+
+bool guardarCSV(string DocumentName, vector<Item> &items) {
+    ofstream file(DocumentName);
+
+    if (!file.is_open()) {
+        cout << "No se pudo abrir el archivo para escribir: " << DocumentName << "\n";
+        return false;
+    }
+
+    file << "Nombre,Cantidad,Tipo,Lanzable\n";
+    for (Item &i : items) {
+        file << i.getName() << "," << i.getAmount() << "," << i.getType() 
+        << "," << i.getThrowable() << "\n";
     }
 
     file.close();
@@ -176,7 +195,7 @@ int main() {
         return 0;
     }
 
-    while (opcion != 8) {
+    while (opcion != 9) {
         menu();
         cin >> opcion;
 
@@ -188,18 +207,22 @@ int main() {
             }
             case 2: {
                 quickSort(items, 0, items.size() - 1, 1);
+                guardarCSV("ItemsTerraria.csv", items);
                 break;
             }
             case 3: {
                 quickSort(items, 0, items.size() - 1, 2);
+                guardarCSV("ItemsTerraria.csv", items);
                 break;
             }
             case 4: {
                 quickSort(items, 0, items.size() - 1, 3);
+                guardarCSV("ItemsTerraria.csv", items);
                 break;
             }
             case 5: {
                 quickSort(items, 0, items.size() - 1, 4);
+                guardarCSV("ItemsTerraria.csv", items);
                 break;
             }
             case 6: {
@@ -234,6 +257,14 @@ int main() {
                 break;
             }
             case 8:
+                if (guardarCSV("ItemsTerraria.csv", items)) {
+                    cout << "Inventario guardado correctamente.\n";
+                } 
+                else {
+                    cout << "Error guardando el archivo.\n";
+                }
+                break;
+            case 9:
                 cout << "Saliendo del sistema...\n";
                 break;
             default:
