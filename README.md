@@ -48,6 +48,7 @@ t7: Objetos lanzados.
 
 t8: Veces que se guardaron los items en .csv con nuevo orden.
 
+
 Espacio
 - S(n) = O(n) + O(Log(n)) + O(1) = O(n)
 
