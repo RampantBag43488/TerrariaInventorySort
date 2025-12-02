@@ -62,4 +62,5 @@ Se debe tener en una misma carpeta el main, los dos archivos.h y el .csv (si es 
 compilar en consola con: "g++ TerrariaMain.cpp" (esto teniendo todos los archivos como se especifico y habriendo desde alli la consola).
 
 ### Correcciones
-- Se agrego funcion de actualizacion de datos en el .csv
+- Se agrego funcion de actualizacion de datos en el .csv.
+- Se agregaron comentarios para describir las funciones.
