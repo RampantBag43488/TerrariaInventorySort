@@ -12,12 +12,21 @@
  * 
  */
 
+// Objetos de mi proyecto, queue y librerias necesarias
 #include <fstream>
 #include <sstream>
 #include "itemqueue.h"
 
 using namespace std;
 
+/**
+ * menu muestra las opciones que tiene el usuario para interactuar con el inventario.
+ *
+ * Despliega las opciones para que el usuario escoja.
+ *
+ * @param
+ * @return 
+ */
 void menu() {
     cout << "\n--- MENU DEL INVENTARIO (Terraria) ---\n";
     cout << "1. Mostrar inventario\n";
@@ -32,6 +41,21 @@ void menu() {
     cout << "Elige una opcion: ";
 }
 
+/**
+ * cargarCSV usa la funcion ifstream para leer los datos del .csv
+ *
+ * Carga el archivo con la funcion file, checa si cargo bien para 
+ * proseguir y si no cargo bien retorna false. Se saca la primera 
+ * linea que son los headers de las columnas y luego con getline 
+ * se va sacando cada linea, ingresando datos a strings y en los 
+ * que son numeros se usa la funcion stoi para hacerlos enteros. 
+ * Una vez sacada la linea entera se guarda en el vector de items
+ * creando un item nuevo con la funcion emplace_back de vector y
+ * se repite esto hasta encontrarse con una linea vacia.
+ *
+ * @param
+ * @return booleano true=si cargo bien el archivo
+ */
 bool cargarCSV(string DocumentName, vector<Item> &items) {
     ifstream file(DocumentName);
 
@@ -69,6 +93,16 @@ bool cargarCSV(string DocumentName, vector<Item> &items) {
     return true;
 }
 
+/**
+ * guardarCSV usa la funcion ofstream para abrir el .csv y va 
+ * metiendo lineas
+ *
+ * Abre el archivo con ofstream y le va instertando los datos 
+ * en el orden que esten en el vector de items
+ *
+ * @param
+ * @return booleano true=se sobre escribio correctamente
+ */
 bool guardarCSV(string DocumentName, vector<Item> &items) {
     ofstream file(DocumentName);
 
@@ -87,30 +121,91 @@ bool guardarCSV(string DocumentName, vector<Item> &items) {
     return true;
 }
 
+/**
+ * menorAmount compara la cantidad de dos items distintos
+ *
+ * Recibe referencia a dos items distintos y compara su 
+ * cantidad para luego ser organizados en base a si el 
+ * primero es menor, si son iguales devuelve si el 
+ * primero es menor en tipo.
+ *
+ * @param
+ * @return booleano true=si el primero es menor en cantidad
+ */
 bool menorAmount(Item &a, Item &b) {
     if (a.getAmount() != b.getAmount())
         return a.getAmount() < b.getAmount();
     return a.getType() < b.getType();
 }
 
+/**
+ * mayorAmount compara la cantidad de dos items distintos
+ *
+ * Recibe referencia a dos items distintos y compara su 
+ * cantidad para luego ser organizados en base a si el 
+ * primero es mayor, si son iguales devuelve si el 
+ * primero es mayor en tipo.
+ *
+ * @param
+ * @return booleano true=si el primero es mayor en cantidad
+ */
 bool mayorAmount(Item &a, Item &b) {
     if (a.getAmount() != b.getAmount())
         return a.getAmount() > b.getAmount();
     return a.getType() > b.getType();
 }
 
+/**
+ * menorType compara el tipo de dos items distintos
+ *
+ * Recibe referencia a dos items distintos y compara su 
+ * tipo para luego ser organizados en base a si el 
+ * primero es menor, si son iguales devuelve si el 
+ * primero es menor en cantidad.
+ *
+ * @param
+ * @return booleano true=si el primero es menor en tipo
+ */
 bool menorType(Item &a, Item &b) {
     if (a.getType() != b.getType())
         return a.getType() < b.getType();
     return a.getAmount() < b.getAmount();
 }
 
+/**
+ * mayorType compara el tipo de dos items distintos
+ *
+ * Recibe referencia a dos items distintos y compara su 
+ * tipo para luego ser organizados en base a si el 
+ * primero es mayor, si son iguales devuelve si el 
+ * primero es mayor en cantidad.
+ *
+ * @param
+ * @return booleano true=si el primero es mayor en tipo
+ */
 bool mayorType(Item &a, Item &b) {
     if (a.getType() != b.getType())
         return a.getType() > b.getType();
     return a.getAmount() > b.getAmount();
 }
 
+/**
+ * quickSort ordena un vector en el caso que se le pase
+ *
+ * Recibe referencia al vector de items para ordenarse, el 
+ * valor mas bajo y el valor mas alto que se usara como 
+ * pivote para checar los valores del vactor dependiendo 
+ * del caso que se pase para ordenar y con una variable 
+ * temporal de tipo item va swapeando i y j hasta que j 
+ * llega al final y entonces i sera la posicion de el 
+ * pivote asi que intercambian lugar y se hace recursion 
+ * con el lado izquierdo y derecho del pivote hasta que 
+ * este ordenado.
+ *
+ * @param referencia a vector items, entero low, entero 
+ * high y caso de ordenamiento
+ * @return 
+ */
 void quickSort(vector<Item> &vec, int low, int high, int n) {
     if(low >= high) {
         return;
@@ -160,10 +255,16 @@ void quickSort(vector<Item> &vec, int low, int high, int n) {
     quickSort(vec, i + 1, high, n);
 }
 
-
-
-
-
+/**
+ * mostrarItems imprime todos los items en el orden que estan
+ *
+ * se usa un for para pasar por todos los elementos en el 
+ * vector items y se imprimen todos los valores de cada 
+ * item con sus getters.
+ *
+ * @param recibe el vector items como referencia
+ * @return 
+ */
 void mostrarItems(vector<Item> &items) {
     cout << "======================================================\n";
     for (auto &it : items) {
@@ -173,6 +274,17 @@ void mostrarItems(vector<Item> &items) {
     cout << "======================================================\n";
 }
 
+/**
+ * mostrarItems imprime todos los items lanzables
+ *
+ * se usa un for para pasar por todos los elementos en el 
+ * vector items y se imprimen todos los valores de cada 
+ * item con sus getters, los cuales tengan en el valor de
+ * throwable 1.
+ *
+ * @param recibe el vector items como referencia
+ * @return 
+ */
 void mostrarFlechas(vector<Item> &items) {
     cout << "======================================================\n";
     for (auto &it : items) {
@@ -184,11 +296,12 @@ void mostrarFlechas(vector<Item> &items) {
     cout << "======================================================\n";
 }
 
+
 int main() {
     int opcion = 0;
 
-    vector<Item> items;
-    itemQueue<Item> arrows(3);
+    vector<Item> items; // vector que representara inventario
+    itemQueue<Item> arrows(3); // queue para fila de objetos lanzables
 
     if (!cargarCSV("ItemsTerraria.csv", items)) {
         cout << "Verifique que ItemsTerraria.csv este en la misma carpeta.\n";
@@ -207,22 +320,18 @@ int main() {
             }
             case 2: {
                 quickSort(items, 0, items.size() - 1, 1);
-                guardarCSV("ItemsTerraria.csv", items);
                 break;
             }
             case 3: {
                 quickSort(items, 0, items.size() - 1, 2);
-                guardarCSV("ItemsTerraria.csv", items);
                 break;
             }
             case 4: {
                 quickSort(items, 0, items.size() - 1, 3);
-                guardarCSV("ItemsTerraria.csv", items);
                 break;
             }
             case 5: {
                 quickSort(items, 0, items.size() - 1, 4);
-                guardarCSV("ItemsTerraria.csv", items);
                 break;
             }
             case 6: {
