@@ -4,7 +4,7 @@
  * Inaki Mancera Llano
  * A01708827
  * 01/12/2025
- * version: 1
+ * version: 2
  * Este proyecto busca simular el inventario del videojuego terraria, permite
  * acomodar los items en el inventario por cantidad o por tipo (mayor a menor 
  * y menor a mayor) y anadir item que se puedan lanzar a la fila de objetos 
@@ -15,6 +15,7 @@
 // Objetos de mi proyecto, queue y librerias necesarias
 #include <fstream>
 #include <sstream>
+#include <algorithm>   // para std::min
 #include "itemqueue.h"
 
 using namespace std;
@@ -34,11 +35,85 @@ void menu() {
     cout << "3. Ordenar por cantidad (mayor a menor)\n";
     cout << "4. Ordenar por tipo (menor a mayor)\n";
     cout << "5. Ordenar por tipo (mayor a menor)\n";
-    cout << "6. Agregar objeto lanzable para uso\n";
+    cout << "6. Colocar un item lanzable para uso\n";
     cout << "7. Disparar!!!!\n";
     cout << "8. Guardar items en el .csv\n";
     cout << "9. Salir\n";
     cout << "Elige una opcion: ";
+}
+
+/**
+ * printCube dibuja en consola un "slot" vacio del inventario.
+ *
+ * Crea un vector de strings que representan las lineas de un
+ * recuadro con borde (usado para mostrar un slot sin item) y
+ * luego las imprime una por una en la consola.
+ *
+ * @param
+ * @return 
+ */
+void printCube() {
+    vector<string> lines = {
+        "##################",
+        "#                #",
+        "#                #",
+        "#                #",
+        "#                #",
+        "#                #",
+        "#                #",
+        "#                #",
+        "##################"
+    };
+
+    for (const string &line : lines) {
+        cout << line << '\n';
+    }
+
+}
+
+/**
+ * printCubeArrow dibuja un slot con una flecha y datos del item.
+ *
+ * Crea un "cubo" similar a printCube pero con una flecha apuntando
+ * hacia arriba en el centro, representando que ese item está listo
+ * para usarse. En la parte inferior se escribe el nombre del item
+ * a la izquierda y la cantidad a la derecha.
+ *
+ * @param name   nombre del item lanzable que se mostrará en el cuadro
+ * @param number cantidad del item que se mostrara en el cuadro
+ * @return 
+ */
+void printCubeArrow(string name,int number) {
+    vector<string> lines = {
+        "##################",
+        "#                #",
+        "#       ^        #",
+        "#      ^^^       #",
+        "#     ^^^^^      #",
+        "#       ^        #",
+        "#       ^        #",
+        "#                #",
+        "##################"
+    };
+
+    int rowName = lines.size() - 2;
+    for (int i = 0; i < (int)name.size() && i + 1 < (int)lines[rowName].size() - 1; i++) {
+        lines[rowName][1 + i] = name[i];
+    }
+
+    string numStr = to_string(number);
+
+    int row = lines.size() - 2;
+    int len = lines[row].size();
+    int startPos = len - 1 - numStr.size();
+
+    for (int i = 0; i < (int)numStr.size(); i++) {
+        lines[row][startPos + i] = numStr[i];
+    }
+
+    for (const string &line : lines) {
+        cout << line << '\n';
+    }
 }
 
 /**
@@ -85,7 +160,6 @@ bool cargarCSV(string DocumentName, vector<Item> &items) {
         int type = stoi(stype);
         int throwable = stoi(sthrowable);
         
-
         items.emplace_back(name, amount, type, throwable);
     }
 
@@ -190,69 +264,129 @@ bool mayorType(Item &a, Item &b) {
 }
 
 /**
- * quickSort ordena un vector en el caso que se le pase
+ * compararItems elige el criterio de comparación según el caso.
  *
- * Recibe referencia al vector de items para ordenarse, el 
- * valor mas bajo y el valor mas alto que se usara como 
- * pivote para checar los valores del vactor dependiendo 
- * del caso que se pase para ordenar y con una variable 
- * temporal de tipo item va swapeando i y j hasta que j 
- * llega al final y entonces i sera la posicion de el 
- * pivote asi que intercambian lugar y se hace recursion 
- * con el lado izquierdo y derecho del pivote hasta que 
- * este ordenado.
+ * Recibe referencia a dos items y un entero que indica el caso de
+ * ordenamiento:
+ * 1 = cantidad ascendente, 2 = cantidad descendente,
+ * 3 = tipo ascendente,     4 = tipo descendente.
+ * Regresa true si el primer item debe ir antes que el segundo.
  *
- * @param referencia a vector items, entero low, entero 
- * high y caso de ordenamiento
+ * @param referencias a dos items y entero modo
+ * @return booleano true=si a debe ir antes que b
+ */
+bool compararItems(Item &a, Item &b, int modo) {
+    switch (modo) {
+        case 1:  return menorAmount(a, b);
+        case 2:  return mayorAmount(a, b);
+        case 3:  return menorType(a, b);
+        case 4:  return mayorType(a, b);
+        default: return menorAmount(a, b); // por defecto
+    }
+}
+
+/**
+ * insertionSortSegment ordena un segmento pequeño del vector con insertion sort.
+ *
+ * Recibe el vector de items, el índice inicial y final del segmento, y el
+ * modo de ordenamiento. Recorre el segmento y va insertando cada elemento
+ * en la posición correcta usando el criterio elegido con compararItems.
+ *
+ * @param referencia a vector items, entero left, entero right, entero modo
  * @return 
  */
-void quickSort(vector<Item> &vec, int low, int high, int n) {
-    if(low >= high) {
+void insertionSortSegment(vector<Item> &v, int left, int right, int modo) {
+    for (int i = left + 1; i <= right; ++i) {
+        Item key = v[i];
+        int j = i - 1;
+
+        while (j >= left && compararItems(key, v[j], modo)) {
+            v[j + 1] = v[j];
+            --j;
+        }
+        v[j + 1] = key;
+    }
+}
+
+/**
+ * mergeSegments mezcla dos segmentos contiguos ya ordenados del vector.
+ *
+ * Recibe el vector de items, los índices left, mid y right que definen
+ * dos subarreglos ordenados: [left, mid] y [mid+1, right]. Crea arreglos
+ * temporales para cada segmento y los mezcla en el vector original usando
+ * el criterio indicado por modo.
+ *
+ * @param referencia a vector items, enteros left, mid, right y entero modo
+ * @return 
+ */
+void mergeSegments(vector<Item> &v, int left, int mid, int right, int modo) {
+    int n1 = mid - left + 1;
+    int n2 = right - mid;
+
+    vector<Item> L(n1), R(n2);
+
+    for (int i = 0; i < n1; ++i) {
+        L[i] = v[left + i];
+    }
+    for (int j = 0; j < n2; ++j) {
+        R[j] = v[mid + 1 + j];
+    }
+
+    int i = 0, j = 0, k = left;
+
+    while (i < n1 && j < n2) {
+        if (compararItems(L[i], R[j], modo)) {
+            v[k++] = L[i++];
+        } else {
+            v[k++] = R[j++];
+        }
+    }
+
+    while (i < n1) {
+        v[k++] = L[i++];
+    }
+
+    while (j < n2) {
+        v[k++] = R[j++];
+    }
+}
+
+/**
+ * timSort ordena el vector de items usando una version simplificada de TimSort.
+ *
+ * Primero divide el vector en bloques pequeños (runs) de tamaño MINRUN y 
+ * ordena cada bloque con insertionSortSegment. Después, va haciendo merges 
+ * de bloques de tamaño MINRUN, 2*MINRUN, 4*MINRUN, etc., hasta que todo 
+ * el vector queda ordenado de acuerdo al modo de comparación elegido.
+ *
+ * @param referencia a vector items y entero modo de ordenamiento
+ * @return 
+ */
+void timSort(vector<Item> &v, int modo) {
+    const int MINRUN = 32;
+    int n = v.size();
+
+    if (n <= 1) {
         return;
     }
-    int i = low - 1;
-    int j = low;
-    int pi = high;
-    bool cond;
-    Item temp;
 
-    while(j < pi) {
-        switch (n) {
-            case 1: {
-                cond = menorAmount(vec[j], vec[pi]);
-                break;
-            }
-            case 2: {
-                cond = mayorAmount(vec[j], vec[pi]);
-                break;
-            }
-            case 3: {
-                cond = menorType(vec[j], vec[pi]);
-                break;
-            }
-            case 4: {
-                cond = mayorType(vec[j], vec[pi]);
-                break;
-            }
-        }
-
-        if(cond) {
-            i++;
-            Item temp = vec[i];
-            vec[i] = vec[j];
-            vec[j] = temp;
-        }
-        j++;
+    // 1) Ordenar pequeños bloques con insertion sort
+    for (int start = 0; start < n; start += MINRUN) {
+        int end = min(start + MINRUN - 1, n - 1);
+        insertionSortSegment(v, start, end, modo);
     }
 
-    i++;
-    
-    temp = vec[i];
-    vec[i] = vec[pi];
-    vec[pi] = temp;
-
-    quickSort(vec, low, i - 1, n);
-    quickSort(vec, i + 1, high, n);
+    // 2) Merge de bloques de tamaño MINRUN, luego 2*MINRUN, 4*MINRUN, ...
+    for (int size = MINRUN; size < n; size *= 2) {
+        for (int left = 0; left < n; left += 2 * size) {
+            int mid = left + size - 1;
+            if (mid >= n - 1) {
+                break; // no hay segundo bloque completo
+            }
+            int right = min(left + 2 * size - 1, n - 1);
+            mergeSegments(v, left, mid, right, modo);
+        }
+    }
 }
 
 /**
@@ -275,7 +409,7 @@ void mostrarItems(vector<Item> &items) {
 }
 
 /**
- * mostrarItems imprime todos los items lanzables
+ * mostrarFlechas imprime todos los items lanzables
  *
  * se usa un for para pasar por todos los elementos en el 
  * vector items y se imprimen todos los valores de cada 
@@ -315,53 +449,85 @@ int main() {
         switch (opcion) {
             case 1: {
                 mostrarItems(items);
-                
                 break;
             }
             case 2: {
-                quickSort(items, 0, items.size() - 1, 1);
+                timSort(items, 1);
                 break;
             }
             case 3: {
-                quickSort(items, 0, items.size() - 1, 2);
+                timSort(items, 2);
                 break;
             }
             case 4: {
-                quickSort(items, 0, items.size() - 1, 3);
+                timSort(items, 3);
                 break;
             }
             case 5: {
-                quickSort(items, 0, items.size() - 1, 4);
+                timSort(items, 4);
                 break;
             }
-            case 6: {
-                if(arrows.full()) {
-                    cout << "No caben mas objetos lanzables :o\n";
-                }
-                else{
-                    cin.ignore();
-                    string objeto;
-                    mostrarFlechas(items);
-                    cout << "Que objeto lanzable quiere anadir a los slots de lanzables (nombre exacto): ";
-                    getline(cin, objeto);
-                    for (Item &i : items) {
-                        if(i.getName() == objeto){
-                            arrows.enqueue(i);
-                        }
-                    }
-                }
-                
-                break;
+            case 6: { 
+                if(arrows.full()) { 
+                    cout << "No caben mas objetos lanzables :o\n"; 
+                } 
+                else{ 
+                    int index = 0; 
+                    cin.ignore(); 
+                    string objeto; 
+                    mostrarFlechas(items); 
+                    cout << "Que objeto lanzable quiere anadir a los slots de lanzables (nombre exacto): "; 
+                    getline(cin, objeto); 
+
+                    for (Item &i : items) { 
+                        if(i.getName() == objeto){ 
+                            arrows.enqueue(i); 
+                            items.erase(items.begin() + index); 
+                        } 
+                        index++; 
+                    } 
+                } 
+                break; 
             }
             case 7: {
-                if(arrows.empty()) {
-                    cout << "No hay mas flechas :(\n";
+                if (arrows.empty()) {
+                    cout << "\n\nNo hay items lanzables colocados:\n";
+                    printCube();
+                    printCube();
+                    printCube();
                 }
                 else{
                     arrows.dequeue();
-                    cout << "Piuuuuuuuu >>---->\n";
-                    cout << "Flechas en uso restantes: \n";
-                    cout << arrows.front().getName() << ": " << arrows.front().getAmount() << endl;
+                    cout << "\n\nSlots de items lanzables:\n";
+
+                    int c = arrows.count();
+
+                    if (c == 0) {
+                        printCube();
+                        printCube();
+                        printCube();
+                    }
+                    else if (c == 1) {
+                        auto f = arrows.front();
+                        printCubeArrow(f.getName(), f.getAmount());
+                        printCube();
+                        printCube();
+                    }
+                    else if (c == 2) {
+                        auto f = arrows.front();
+                        auto m = arrows.middle();
+                        printCubeArrow(f.getName(), f.getAmount());
+                        printCubeArrow(m.getName(), m.getAmount());
+                        printCube();
+                    }
+                    else {
+                        auto f = arrows.front();
+                        auto m = arrows.middle();
+                        auto l = arrows.last();
+                        printCubeArrow(f.getName(), f.getAmount());
+                        printCubeArrow(m.getName(), m.getAmount());
+                        printCubeArrow(l.getName(), l.getAmount());
+                    }
                 }
                 break;
             }
@@ -377,8 +543,8 @@ int main() {
                 cout << "Saliendo del sistema...\n";
                 break;
             default:
-                cout << "Opción inválida.\n";
-            }
+                cout << "Opcion invalida.\n";
         }
+    }
     return 0;
 }
