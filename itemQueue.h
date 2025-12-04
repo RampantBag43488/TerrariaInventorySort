@@ -1,4 +1,3 @@
-
 /*
  *
  * Proyecto inventario clase itemQueue
@@ -34,6 +33,8 @@ class itemQueue {
         bool full();
         int count();
         T front();
+        T middle();
+        T last();
 };
 
 template <class T>
@@ -128,6 +129,34 @@ bool itemQueue<T>::full() {
 template <class T>
 T itemQueue<T>::front() {
     return slots[head];
+}
+
+/**
+ * front regresa el objeto que esta a la cabeza de la queue
+ *
+ * Solicita el objeto head al vector que representa la queue
+ *
+ * @param
+ * @return Objeto de tipo T
+ */
+template <class T>
+T itemQueue<T>::middle() {
+    int idx = (head + 1) % size;
+    return slots[idx];
+}
+
+/**
+ * front regresa el objeto que esta a la cabeza de la queue
+ *
+ * Solicita el objeto head al vector que representa la queue
+ *
+ * @param
+ * @return Objeto de tipo T
+ */
+template <class T>
+T itemQueue<T>::last() {
+    int idx = (tail - 1 + size) % size;
+    return slots[idx];
 }
 
 /**
