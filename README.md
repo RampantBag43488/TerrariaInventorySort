@@ -11,7 +11,7 @@ Se implementa una queue simulando los 3 slots para objetos lanzables a la derech
 ## Analisis de complejidad
 ### TimSort
 Tiempo
-- Mejor caso: O(n)
+- Mejor caso: O(n Log(n))
 - Caso promedio: O(n Log(n))
 - Peor caso: O(n Log(n))
 
